@@ -1,0 +1,771 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next pisces use-motion" lang="zh-Hans">
+<head><meta name="generator" content="Hexo 3.8.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform">
+<meta http-equiv="Cache-Control" content="no-siteapp">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css">
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css">
+
+<link href="/css/main.css?v=5.1.4" rel="stylesheet" type="text/css">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon.png?v=5.1.4">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=5.1.4" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="Just Run">
+
+
+
+
+
+
+
+
+
+
+<meta name="description" content="前言Pungi 是一个系统版本构建工具，从本质上来说是将各个构建流程命令综合到一起，形成的一个自动化打包工具，成品为 ISO . 网络上面的相关 Pungi 文档非常稀缺，主要因为 Pungi 是一个纯粹的流程工具，每一个开发操作系统的团队都有一个这样的内部流程和定制/非定制 Pungi . 这些东西往往不会被发布在网上，所以为了搞清楚 Pungi 的整个过程，我还是花费了很多的力气，非常感谢我的">
+<meta property="og:type" content="article">
+<meta property="og:title" content="使用Pungi构建Fedora的ISO镜像">
+<meta property="og:url" content="http://cnetwork.github.io/2017/11/13/使用Pungi构建Fedora的ISO镜像/index.html">
+<meta property="og:site_name" content="Cnetwork‘s Home">
+<meta property="og:description" content="前言Pungi 是一个系统版本构建工具，从本质上来说是将各个构建流程命令综合到一起，形成的一个自动化打包工具，成品为 ISO . 网络上面的相关 Pungi 文档非常稀缺，主要因为 Pungi 是一个纯粹的流程工具，每一个开发操作系统的团队都有一个这样的内部流程和定制/非定制 Pungi . 这些东西往往不会被发布在网上，所以为了搞清楚 Pungi 的整个过程，我还是花费了很多的力气，非常感谢我的">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:updated_time" content="2017-11-12T16:37:29.396Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="使用Pungi构建Fedora的ISO镜像">
+<meta name="twitter:description" content="前言Pungi 是一个系统版本构建工具，从本质上来说是将各个构建流程命令综合到一起，形成的一个自动化打包工具，成品为 ISO . 网络上面的相关 Pungi 文档非常稀缺，主要因为 Pungi 是一个纯粹的流程工具，每一个开发操作系统的团队都有一个这样的内部流程和定制/非定制 Pungi . 这些东西往往不会被发布在网上，所以为了搞清楚 Pungi 的整个过程，我还是花费了很多的力气，非常感谢我的">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Pisces',
+    version: '5.1.4',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="http://cnetwork.github.io/2017/11/13/使用Pungi构建Fedora的ISO镜像/">
+
+
+
+
+
+  <title>使用Pungi构建Fedora的ISO镜像 | Cnetwork‘s Home</title>
+  
+
+
+
+
+
+
+
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">Cnetwork‘s Home</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle">曙光的技术站</p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br>
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-about">
+          <a href="/about/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-user"></i> <br>
+            
+            关于
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br>
+            
+            标签
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br>
+            
+            归档
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://cnetwork.github.io/2017/11/13/使用Pungi构建Fedora的ISO镜像/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Felix Wang">
+      <meta itemprop="description" content>
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Cnetwork‘s Home">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">使用Pungi构建Fedora的ISO镜像</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2017-11-13T00:14:03+08:00">
+                2017-11-13
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p><code>Pungi</code> 是一个系统版本构建工具，从本质上来说是将各个构建流程命令综合到一起，形成的一个自动化打包工具，成品为 ISO . 网络上面的相关 Pungi 文档非常稀缺，主要因为 Pungi 是一个纯粹的流程工具，每一个开发操作系统的团队都有一个这样的内部流程和定制/非定制 Pungi . 这些东西往往不会被发布在网上，所以为了搞清楚 Pungi 的整个过程，我还是花费了很多的力气，非常感谢我的 Mentor 对我的指点！ </p>
+<blockquote>
+<p>关键字：Pungi &amp; Linux &amp; Fedora &amp; ISO</p>
+</blockquote>
+<ul>
+<li><code>Pungi源码</code> ：<a href="https://pagure.io/pungi.git" target="_blank" rel="noopener">https://pagure.io/pungi.git</a>  (使用git clone)</li>
+<li><code>Pungi安装</code> ：dnf install pungi   (yum 或者 apt-get)</li>
+</ul>
+<a id="more"></a>
+<h2 id="更新历史"><a href="#更新历史" class="headerlink" title="更新历史"></a>更新历史</h2><p>2016年10月05日 - 形成初稿<br>2017年11月12日 - 重新整理完善并发布</p>
+<h2 id="ISO安装构建原理"><a href="#ISO安装构建原理" class="headerlink" title="ISO安装构建原理"></a>ISO安装构建原理</h2><p>   安装操作系统时，相当一部分是使用ISO进行安装，或者使用其他存储介质。各个的安装过程原理基本相同。举例来说，安装 Fedora，Neokylin 时候，各个安装过程: 格式化磁盘，配置网络, 设置用户等等均是在一个微型操作系统下 Anaconda 下执行的。整个安装过程相当于是首先在介质上启动一个微型操作系统（ Ubuntu 下的 wubi, Fedora下的 Anaconda等, Windows 下的各种 PE), 然后该微型操作会将 Fedora 等操作系统安装进硬盘，构建目录，并将所需要的 rpm 包安装如目标系统，放置启动镜像，安装启动引导。最终完成安装，新操作系统能够独立自主启动。 Fedora ISO 包中包含了Anaconda以及安装 Fedora 所需的 rpm 。</p>
+<h2 id="Pungi相关环境配置"><a href="#Pungi相关环境配置" class="headerlink" title="Pungi相关环境配置"></a>Pungi相关环境配置</h2><h3 id="mock"><a href="#mock" class="headerlink" title="mock"></a>mock</h3><p><code>Pungi</code> 在实际使用中一般与 <code>mock</code> 命令相互搭配，<code>mock</code> 是一个构建虚拟环境的命令，会在某一操作系统环境下构造出所需要的其他操作系统环境，本质来说为在一个特殊目录下重建所需操作系统环境下的根目录，如可以在 <code>Fedora-25</code> 下的 <code>/var/lib/mock/</code> 下构建 <code>fedora-24</code> 的根目录，这样确保了 <code>BuildRequire</code> 是正确的，并且没有忽略必要的依赖。</p>
+<p>举例来说</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">mock -r fedora-24-x86_64 --init</span><br><span class="line">其中 -r 为选定配置文件， --init代表初始化</span><br></pre></td></tr></table></figure>
+<p>该行代码执行过程中 <code>mock</code> 会调用 <code>/etc/mock</code> 目录下的 <code>fedora-24-x86_64.cfg</code> (为 -r 参数指定)，在 <code>/var/lib/mock</code> 目录下构建一个 <code>fedora-24-x86_64</code>的虚拟环境，进入该环境 <code>root</code> 目录,可以发现 <code>mock</code> 命令构建了一个完整的根目录 </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">builddir  home   logs   opt     sbin  tmp  work</span><br><span class="line">bin       dev       lib    media  proc     root </span><br><span class="line">boot      etc       lib64  mnt    rawhide  run ...</span><br></pre></td></tr></table></figure>
+<p>该环境独立于当前操作系统环境。<code>mock</code> 可以在该环境中执行相应的 Linux 命令，不会与主机环境相影响。</p>
+<h3 id="createrepo"><a href="#createrepo" class="headerlink" title="createrepo"></a>createrepo</h3><p>构建过程中需要用到相应的 linux mirror来获取所需 rpm 包，具体过程体现在 <code>.ks</code> 文件中（下一个章节会进行描述), 可能需要本地库支持，<code>createrepo</code> 可以快速的通过 rpm 包构建本地库，具体执行步骤很简单: 收集 rpm 包 -&gt; 将 rpm 包放在一个目录中 -&gt; 对该目录执行<code>createrepo</code>相关命令  </p>
+<ul>
+<li>Step 1: 收集 rpm 包<br>可以从安装光盘内直接拷贝到本地，也可以从各大国内 Linux mirrors中下载</li>
+</ul>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">aliyun(阿里云) http://mirrors.aliyun.com/</span><br><span class="line">netease(网易)  http://mirrors.163.com/</span><br><span class="line">sohu(搜狐)	 http://mirrors.sohu.com/</span><br></pre></td></tr></table></figure>
+<p>会用到的有 <code>rpm-repo</code> 以及 <code>source_rpm-repo</code></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">以 Aliyun 上的 Fedora 24 为例:</span><br><span class="line">repo : http://mirrors.aliyun.com/fedora/releases/24/Everything/x86_64/os/</span><br><span class="line">source-repo : http://mirrors.aliyun.com/fedora/releases/24/Everything/source/tree/</span><br></pre></td></tr></table></figure>
+<ul>
+<li>Step 2: 将 rpm 包存放在一个目录下<ul>
+<li>该目录中可以以各个子目录的形式保存 rpm </li>
+</ul>
+</li>
+</ul>
+<ul>
+<li><p>Step 3: 使用 <code>createrepo</code> 创建本地仓库</p>
+<p>  如  <code>createrepo /mnt/local_repo</code> 可以加入相应参数</p>
+<ul>
+<li>–database 创建 .sqlite</li>
+<li>–update 更新repo</li>
+<li>–checksum 改变checksum</li>
+<li><p>一般使用最基本的命令即可</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">createrepo  --database /.../repo_dir/</span><br></pre></td></tr></table></figure>
+</li>
+</ul>
+</li>
+<li><p>Step 4: 配置仓库</p>
+<p> Linux下本地仓库的地址一般为</p>
+  <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">file:///home/..../repo_dir</span><br><span class="line">格式具体可以看做 file:// + 相应绝对路径</span><br></pre></td></tr></table></figure>
+</li>
+</ul>
+<p>   如果本地使用，可以选择在 <code>/etc/yum.repo.d</code>下创建一个 .repo文件，写上如下基本内容</p>
+<pre><code><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">[myrepo]</span><br><span class="line">name = The_name_of_the_repo</span><br><span class="line">baseurl = file:///.../.../repodir</span><br></pre></td></tr></table></figure>
+</code></pre><h3 id="其他安装注意事项"><a href="#其他安装注意事项" class="headerlink" title="其他安装注意事项"></a>其他安装注意事项</h3><ul>
+<li>安装<code>Pungi</code> 时需要很多依赖库，如果出现依赖库版本冲突需要降级可以加入 <code>--allowerasing</code> 参数</li>
+<li><code>Pungi</code> 本身不必要在系统内安装，可以只在 <code>mock</code> 内安装</li>
+</ul>
+<h2 id="Pungi实际制作过程"><a href="#Pungi实际制作过程" class="headerlink" title="Pungi实际制作过程"></a>Pungi实际制作过程</h2><p>制作过程主要分为五步</p>
+<h3 id="mock-环境初始化"><a href="#mock-环境初始化" class="headerlink" title="mock 环境初始化"></a>mock 环境初始化</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">mock -r fedora-24-x86_64 --init</span><br></pre></td></tr></table></figure>
+<h3 id="环境中安装-Pungi"><a href="#环境中安装-Pungi" class="headerlink" title="环境中安装 Pungi"></a>环境中安装 Pungi</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">mock -r fedora-24-x86_64 --no-clean --install pungi</span><br></pre></td></tr></table></figure>
+<p>该步骤执行时会对Pungi及其依赖包进行安装，安装后，便可以在该环境中使用 Pungi 进行构造。</p>
+<h3 id="准备-ks-配置文件"><a href="#准备-ks-配置文件" class="headerlink" title="准备 .ks 配置文件"></a>准备 <code>.ks</code> 配置文件</h3><p>Pungi 在执行时会索引一个 .ks文件，可以是默认也可以自己编写，ks 文件所起到的作用有两个</p>
+<pre><code>- 设置 Pungi构造时下载所需要的 rpm source-rpm 包的 repo地址
+- 设置 Pungi构造时需要构造的模块
+</code></pre><p>查看示例文件 rawhide-fedora.ks 文件（在/var/lib/mock/fedora-24-x86_64/root/usr/share/pungi/ 中）,会发现以下内容（该内容为修改过后的内容）</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line">repo --name=rawhide --baseurl=http://mirrors.aliyun.com/fedora/releases/24/Everything/x86_64/os/</span><br><span class="line">repo --name=rawhide-source  --baseurl=http://mirrors.aliyun.com/fedora/releases/24/Everything/source/tree/</span><br><span class="line"></span><br><span class="line">%packages --default</span><br><span class="line"># core</span><br><span class="line">tcsh</span><br><span class="line">kernel*</span><br><span class="line">-kernel*debug*</span><br><span class="line">-kernel*-devel*</span><br><span class="line">-kernel-kdump*</span><br><span class="line">-syslog-ng</span><br><span class="line"># Desktop Packages</span><br><span class="line">@kde-desktop</span><br><span class="line">echo-icon-theme</span><br><span class="line">tracker</span><br><span class="line">swfdec</span><br><span class="line">libflashsupport</span><br><span class="line">nspluginwrapper</span><br><span class="line">liferea</span><br><span class="line">esc</span><br><span class="line">thunderbird</span><br><span class="line"># apps</span><br><span class="line">@authoring-and-publishing</span><br><span class="line">@eclipse</span><br><span class="line">joe</span><br><span class="line">......</span><br><span class="line">%end</span><br></pre></td></tr></table></figure>
+<p>第一行与第二行 repo 指定时，如果是单独的 repo 可以使用 <code>--baseurl=http://repo_url</code>, 如果是一个 repo list 则使用参数    <code>--mirrorlists=http://repo_list_url</code>, fedora 一般会采用列表形式，但是由于国内速度较慢，所以讲两个 repo 换成国内 Aliyun</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">repo --name=rawhide --baseurl=http://mirrors.aliyun.com/fedora/releases/24/Everything/x86_64/os/</span><br><span class="line">repo --name=rawhide-source  --baseurl=http://mirrors.aliyun.com/fedora/releases/24/Everything/source/tree/</span><br></pre></td></tr></table></figure>
+<p><code>%package</code> 到 <code>%end</code> 的内容为制作 ISO 应加入的模块，这个可以根据实际需求定制，如果需要的功能少则酌情根据需求删减，我们在这里不作替换。</p>
+<p>这里需要注意的是，每一次 <code>mock ... --init</code> 都会重新构建一个全新的环境，如果修改过后重新进行 <code>--init</code> 以及 <code>--install pungi</code> 操作, 原改动会丢失，可以在外部编辑好 ks 文件，然后放入到 pungi 目录中去</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">mock -r fedora-25-x86_64 --copyin /home/.../my_ks_file /usr/share/pungi/custom.ks</span><br></pre></td></tr></table></figure>
+<p>这里出现的两个位置，<code>/home/.../my_ks_file</code> 是在本机环境中的 ks 文件路径<br>第二个位置 <code>/usr/share/pungi</code> 则是在构造环境中 需要放置 ks 文件的路径（实际相当于<code>/var/lib/mock/fedora-24-x86_64/root/usr/share/pungi/</code>）</p>
+<h3 id="构造ISO"><a href="#构造ISO" class="headerlink" title="构造ISO"></a>构造ISO</h3><p>实际构造时使用指令</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">mock -r fedora-24-x86_64 --chroot &quot;/usr/bin/pungi -c /usr/share/pungi/[custom.ks]&quot;</span><br></pre></td></tr></table></figure>
+<p>可以在文件末尾加入一些选项</p>
+<ul>
+<li>-G（Gather stage） 从 yum 源将 ks 中列出的包及依赖下载到本地，即包收集阶段</li>
+<li>-C（Createrepo stage）将这些包做成一个本地的 yum 源，即 <code>createrepo</code></li>
+<li>-B（BuildInstall stage）生成 ISO 中的 image 文件等；F13使用 buildinstall 脚本——属于anaconda包；</li>
+<li>-I （CreateISO stage）将 ISO 根目录（installtree）做成 ISO ，即 mkisofs</li>
+</ul>
+<p>构造 ISO 的过程主要有以下几个</p>
+<ul>
+<li>确定下载的 rpm 包及其依赖，生成下载列表并下载</li>
+<li>确定下载的 source rpm 及其依赖，生成下载列表并下载</li>
+<li>生成本地库</li>
+<li>lorax 创建 Anaconda Installer</li>
+<li>mkisofs 创建 ISO 镜像</li>
+</ul>
+<h2 id="附录：相关资料及连接"><a href="#附录：相关资料及连接" class="headerlink" title="附录：相关资料及连接"></a>附录：相关资料及连接</h2><ul>
+<li><a href="http://blog.csdn.net/ericzhong83/article/details/7369539" target="_blank" rel="noopener">实际Pungi操作博客文章</a></li>
+<li><a href="http://fedoraproject.org/wiki/How_to_create_a_Fedora_install_ISO_for_testing" target="_blank" rel="noopener">官方教程</a></li>
+<li><a href="https://pagure.io" target="_blank" rel="noopener">Pungi 官方网站</a></li>
+</ul>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2017/08/02/建立apache-php服务器/" rel="next" title="建立 Apache & PHP 服务器">
+                <i class="fa fa-chevron-left"></i> 建立 Apache & PHP 服务器
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <p class="site-author-name" itemprop="name">Felix Wang</p>
+              <p class="site-description motion-element" itemprop="description">牢骚太盛防肠断，风物长宜放眼量</p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/">
+              
+                  <span class="site-state-item-count">2</span>
+                  <span class="site-state-item-name">日志</span>
+                </a>
+              </div>
+            
+
+            
+
+            
+
+          </nav>
+
+          
+
+          
+
+          
+          
+
+          
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#前言"><span class="nav-number">1.</span> <span class="nav-text">前言</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#更新历史"><span class="nav-number">2.</span> <span class="nav-text">更新历史</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#ISO安装构建原理"><span class="nav-number">3.</span> <span class="nav-text">ISO安装构建原理</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Pungi相关环境配置"><span class="nav-number">4.</span> <span class="nav-text">Pungi相关环境配置</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#mock"><span class="nav-number">4.1.</span> <span class="nav-text">mock</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#createrepo"><span class="nav-number">4.2.</span> <span class="nav-text">createrepo</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#其他安装注意事项"><span class="nav-number">4.3.</span> <span class="nav-text">其他安装注意事项</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Pungi实际制作过程"><span class="nav-number">5.</span> <span class="nav-text">Pungi实际制作过程</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#mock-环境初始化"><span class="nav-number">5.1.</span> <span class="nav-text">mock 环境初始化</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#环境中安装-Pungi"><span class="nav-number">5.2.</span> <span class="nav-text">环境中安装 Pungi</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#准备-ks-配置文件"><span class="nav-number">5.3.</span> <span class="nav-text">准备 .ks 配置文件</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#构造ISO"><span class="nav-number">5.4.</span> <span class="nav-text">构造ISO</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#附录：相关资料及连接"><span class="nav-number">6.</span> <span class="nav-text">附录：相关资料及连接</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; 2017 &mdash; <span itemprop="copyrightYear">2019</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Felix Wang</span>
+
+  
+</div>
+
+
+  <div class="powered-by">由 <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> 强力驱动</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Pisces</a> v5.1.4</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.4"></script>
+
+
+
+  
+  
+
+
+  <script type="text/javascript" src="/js/src/affix.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/schemes/pisces.js?v=5.1.4"></script>
+
+
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.4"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>
